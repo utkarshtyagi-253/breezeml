@@ -43,3 +43,31 @@ def test_regressor_cv_report():
     assert "r2_std" in report
     assert "mae_std" in report
     assert "rmse_std" in report
+from unittest.mock import patch
+from breezeml import plot
+
+
+def test_residuals_plot_smoke():
+    """Smoke test to ensure plot.residuals executes without crashing."""
+    import matplotlib.pyplot as plt
+
+    # 1. Reuse the existing diabetes dataset setup
+    df = datasets.diabetes()
+    
+    # 2. Train a fast linear model using your framework's regressors module
+    model, _ = regressors.linear(df, "target")
+    
+    # 3. Extract features and target to pass into the plotting utility
+    X_test = df.drop(columns=["target"])
+    y_test = df["target"]
+
+    # 4. Mock plt.show() so the test suite runs instantly without holding up execution
+    with patch.object(plt, "show") as mock_show:
+        try:
+            plot.residuals(model, X_test, y_test)
+        except Exception as e:
+            import pytest
+            pytest.fail(f"plot.residuals raised an unexpected exception: {e}")
+
+        # Ensure that the display loop reached its final step successfully
+        mock_show.assert_called_once()
