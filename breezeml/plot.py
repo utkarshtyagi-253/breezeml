@@ -123,3 +123,47 @@ def feature_importance(model, df, target=None, top_n=15):
     ax.set_xlabel("Importance")
     plt.tight_layout()
     plt.show()
+
+def residuals(model, X_test, y_test):
+    """Plot residuals vs predicted scatter plot for regression models.
+
+    Parameters
+    ----------
+    model : object
+        A fitted model or pipeline containing a predict method.
+    X_test : array-like
+        Testing features.
+    y_test : array-like
+        True regression targets.
+    """
+    plt = _require_matplotlib()
+    
+    # Safely extract the underlying pipeline/model if it's wrapped in an EasyModel
+    pipeline = getattr(model, "pipeline", model)
+    if not hasattr(pipeline, "predict"):
+        raise TypeError("This model does not support predictions required for a residuals plot.")
+
+    print("BreezeML Generating residuals plot...")
+    
+    # 1. Generate predictions and calculate residuals
+    preds = pipeline.predict(X_test)
+    res = y_test - preds
+
+    # 2. Build the plot matching the codebase styling layout
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    # Scatter plot of predictions vs residuals
+    ax.scatter(preds, res, alpha=0.6, color="#1f77b4", edgecolor="none")
+    
+    # Reference line at y=0
+    ax.axhline(0, color="black", linestyle="--", alpha=0.7, label="Zero Error")
+    
+    # Labels, titles, and layout styling matching the other functions
+    ax.set_title("Residuals vs. Predicted Values", pad=20, fontsize=14)
+    ax.set_xlabel("Predicted Values")
+    ax.set_ylabel("Residuals (Actual - Predicted)")
+    ax.grid(alpha=0.3)
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.show()
